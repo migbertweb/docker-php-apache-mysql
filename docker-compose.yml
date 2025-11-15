@@ -1,3 +1,17 @@
+# Archivo: docker-compose.yml
+# Descripción: Configuración de Docker Compose para orquestar los servicios PHP-Apache y MySQL/MariaDB
+# Autor: migbertweb
+# Fecha: 2024
+# Repositorio: https://github.com/migbertweb/docker-php-apache-mysql
+# Licencia: MIT License
+#
+# Uso: Define y configura los servicios de contenedores Docker, incluyendo puertos,
+#      volúmenes, variables de entorno y la construcción de imágenes personalizadas.
+#      Ejecutar con: docker-compose up -d
+#
+# Nota: Este proyecto usa Licencia MIT. Se recomienda (no obliga) mantener 
+#       derivados como código libre, especialmente para fines educativos.
+
 version: "3.9"
 services:
   php-apache:

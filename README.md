@@ -1,91 +1,179 @@
-# docker-php-apache-mysql
+# Docker PHP Apache MySQL
 
-# PHP-MySQL connection test
+Stack de desarrollo con Docker que incluye PHP 8.1 con Apache y MariaDB (MySQL) para proyectos web.
 
-So we have confirmation that Apache and PHP are active. The first container
-therefore does the job well. We will therefore now, to go around the subject,
-check that the MySQL container is indeed active, and that the first can connect
-to it.
+## 📋 Descripción
 
-We are going to do this by connecting to MySQL from our terminal, to insert some
-data into a table that we are going to create, then try to display this same
-data from our index.php.
+Este proyecto proporciona un entorno de desarrollo completo y listo para usar con:
+- **PHP 8.1** con Apache
+- **MariaDB** (compatible con MySQL)
+- Configuración de Docker Compose para orquestación de contenedores
+- Extensiones PHP necesarias para conexión con bases de datos (mysqli, PDO, PDO_MySQL)
 
-You need the name of your MySQL container to get started. Nothing could be
-simpler: Execute the command
+## 🚀 Características
 
-```
-$ docker ps --format '{{.Names}}'
-```
+- ✅ PHP 8.1 con Apache
+- ✅ MariaDB (última versión)
+- ✅ Extensiones PHP para MySQL/MariaDB instaladas
+- ✅ Volúmenes configurados para persistencia de datos
+- ✅ Configuración lista para desarrollo local
+- ✅ Ejemplo de conexión PHP-MySQL incluido
 
-in a terminal. Copy the output that mentions the word “mysql”. Then, we will
-perform this sequence of commands to initialize our dataset:
-
-# Connection to the MySQL container
+## 📁 Estructura del Proyecto
 
 ```
-docker exec -ti test-php-mysql-docker-mysql-1 bash
+docker-php-apache-mysql/
+├── app/
+│   └── index.php          # Archivo PHP principal de ejemplo
+├── build/
+│   ├── php/
+│   │   └── Dockerfile     # Imagen personalizada de PHP-Apache
+│   └── mysql/
+│       └── Dockerfile     # Imagen personalizada de MariaDB
+├── docker-compose.yml     # Configuración de servicios Docker
+├── LICENSE                # Licencia MIT
+└── README.md              # Este archivo
 ```
 
-# Connect to MySQL server
+## 🛠️ Requisitos Previos
 
+- Docker instalado ([Instalar Docker](https://docs.docker.com/get-docker/))
+- Docker Compose instalado (incluido con Docker Desktop)
+
+## 📦 Instalación
+
+1. Clona este repositorio:
+```bash
+git clone https://github.com/migbertweb/docker-php-apache-mysql.git
+cd docker-php-apache-mysql
 ```
+
+2. Construye y levanta los contenedores:
+```bash
+docker-compose up -d --build
+```
+
+3. Accede a la aplicación en tu navegador:
+```
+http://localhost
+```
+
+## 🔧 Configuración
+
+### Servicios
+
+- **PHP-Apache**: Puerto `80` (http://localhost)
+- **MySQL/MariaDB**: Puerto `3306`
+
+### Variables de Entorno
+
+Las credenciales por defecto están configuradas en `docker-compose.yml`:
+- **Usuario root**: `root`
+- **Contraseña root**: `super-secret-password`
+- **Base de datos**: `my-wonderful-website`
+
+⚠️ **Importante**: Cambia estas credenciales en producción.
+
+## 💻 Uso
+
+### Verificar que los contenedores están corriendo
+
+```bash
+docker ps
+```
+
+### Conectarse a MySQL desde la terminal
+
+1. Obtener el nombre del contenedor MySQL:
+```bash
+docker ps --format '{{.Names}}'
+```
+
+2. Conectarse al contenedor:
+```bash
+docker exec -ti <nombre-contenedor-mysql> bash
+```
+
+3. Conectarse a MySQL:
+```bash
 mysql -uroot -psuper-secret-password
 ```
 
-# We go to the database created when the container is launched
+4. Usar la base de datos:
+```sql
+USE my-wonderful-website;
+```
+
+### Ejemplo: Crear una tabla y consultar datos
 
 ```sql
-use my-wonderful-website;
+CREATE TABLE Persons (
+    PersonID int,
+    LastName varchar(255),
+    FirstName varchar(255),
+    Address varchar(255),
+    City varchar(255)
+);
+
+INSERT INTO Persons VALUES 
+    (1, 'John', 'Doe', '51 Birchpond St.', 'New York'),
+    (2, 'Jack', 'Smith', '24 Stuck St.', 'Los Angeles'),
+    (3, 'Michele', 'Sparrow', '23 Lawyer St.', 'San Diego');
 ```
 
-# Creation of a "Persons" Table, with a few columns
+Para consultar estos datos desde PHP, descomenta el código en `app/index.php`.
 
-```sql
-CREATE TABLE Persons (PersonID int, LastName varchar(255), FirstName varchar(255), Address varchar(255), City varchar(255));
+### Detener los contenedores
+
+```bash
+docker-compose down
 ```
 
-# Insert some data into this table
+### Detener y eliminar volúmenes (⚠️ elimina los datos)
 
-```sql
-INSERT INTO Persons VALUES (1, 'John', 'Doe', '51 Birchpond St.', 'New York');
-INSERT INTO Persons VALUES (2, 'Jack', 'Smith', '24 Stuck St.', 'Los Angeles');
-INSERT INTO Persons VALUES (3, 'Michele', 'Sparrow', '23 Lawyer St.', 'San Diego');
+```bash
+docker-compose down -v
 ```
 
-These few data now saved in the database, we just have to try to display them
-from our Apache server. So let’s modify the content of our index.php accordingly
-in order to do this:
+## 📝 Desarrollo
 
-```php
-<?php
+El directorio `app/` está montado como volumen, por lo que los cambios en los archivos PHP se reflejan inmediatamente sin necesidad de reconstruir los contenedores.
 
-$host = "mysql"; // Le host est le nom du service, présent dans le docker-compose.yml
-$dbname = "my-wonderful-website";
-$charset = "utf8";
-$port = "3306";
+## 🔌 Conexión PHP-MySQL
 
-try {
-    $pdo = new PDO(
-        dsn: "mysql:host=$host;dbname=$dbname;charset=$charset;port=$port",
-        username: "root",
-        password: "super-secret-password",
-    );
+El archivo `app/index.php` incluye un ejemplo comentado de cómo conectarse a MySQL desde PHP usando PDO. Para usarlo:
 
-    $persons = $pdo->query("SELECT * FROM Persons");
+1. Descomenta el código en `app/index.php`
+2. Asegúrate de que la base de datos y la tabla existen
+3. Recarga la página en tu navegador
 
-    echo '<pre>';
-    foreach ($persons->fetchAll(PDO::FETCH_ASSOC) as $person) {
-        print_r($person);
-    }
-    echo '</pre>';
+## 📄 Licencia
 
-} catch (PDOException $e) {
-    throw new PDOException(
-        message: $e->getMessage(),
-        code: (int)$e->getCode()
-    );
-}
-```
+Este proyecto está licenciado bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
 
-## Direction our browser…. and BINGO!
+**Nota especial**: Se recomienda encarecidamente (aunque no es obligatorio) que las obras derivadas mantengan este mismo espíritu de código libre y abierto, especialmente cuando se utilicen con fines educativos o de investigación.
+
+## 👤 Autor
+
+**Migbertweb**
+
+- GitHub: [@migbertweb](https://github.com/migbertweb)
+- Repositorio: https://github.com/migbertweb/docker-php-apache-mysql
+
+## 🤝 Contribuciones
+
+Las contribuciones son bienvenidas. Siéntete libre de abrir un issue o enviar un pull request.
+
+## 📚 Recursos Adicionales
+
+- [Documentación de Docker](https://docs.docker.com/)
+- [Documentación de Docker Compose](https://docs.docker.com/compose/)
+- [Documentación de PHP](https://www.php.net/docs.php)
+- [Documentación de MariaDB](https://mariadb.com/kb/en/documentation/)
+
+## ⚠️ Notas de Seguridad
+
+- Este stack está configurado para **desarrollo local únicamente**
+- No usar en producción sin ajustar las configuraciones de seguridad
+- Cambiar todas las contraseñas por defecto
+- Configurar firewall y restricciones de acceso según sea necesario
